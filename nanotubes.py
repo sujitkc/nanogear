@@ -60,6 +60,16 @@ def write_data(data, file_name):
   with open(file_name, "w") as fout:
     fout.write(data)
 
+'''
+  This function create a pair processing function.
+  Inputs:
+    transform: the transformation function; either zshift or rotate
+    ttype : stands for transformation type. Actually the name of the output 
+      directory to which the output data should be written. "zshift" or "rotate"
+    all_delta : list of values by which the transformation has to be done. In
+    case of zshift, it's the translational distance, and in case of rotation
+    it's the rotation angle.
+'''
 def make_process_pair(transform, ttype, all_delta):
   def process_pair(it, ot):
     it_fname = "data/2019/" + it + "-fin.xyz"
@@ -78,6 +88,9 @@ def make_process_pair(transform, ttype, all_delta):
 zshift_pair = make_process_pair(shift_z, "zshift", all_shifts)
 rotate_pair = make_process_pair(rotate, "rotate", all_angles)
 
+'''
+  This function creates the processing function.
+'''
 def make_process_all_pairs(process_pair):
   def process_all_pairs(all_pairs):
     for i, o in all_pairs:
