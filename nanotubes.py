@@ -33,6 +33,7 @@ def read_data(file_name):
 
 # input points in cartesian coordinates.
 def shift_z(data, shift):
+  print data
   return [(atom, float(x), float(y), float(z) + shift) for [atom, x, y, z] in data]
 
 def rotate(data, angle):
@@ -52,7 +53,7 @@ def rotate(data, angle):
 
 # convert data to string
 def string_of_data(data):
-  str_rows = [atom + ", " + str(x) + ", " + str(y) + ", " + str(z) + "\n" for [atom, x, y, z]  in data]
+  str_rows = [atom + " " + str(x) + " " + str(y) + " " + str(z) + "\n" for (atom, x, y, z)  in data]
   return reduce(lambda x, y: x + y, str_rows)
 
 # write data to a file
@@ -70,23 +71,27 @@ def write_data(data, file_name):
     case of zshift, it's the translational distance, and in case of rotation
     it's the rotation angle.
 '''
-def make_process_pair(transform, ttype, all_delta):
+def make_process_pair(transform, ttype, all_delta, ipath, opath):
   def process_pair(it, ot):
-    it_fname = "data/2019/" + it + "-fin.xyz"
-    ot_fname = "data/2019/" + ot + "-fin.xyz"
+    it_fname = ipath + it + "-fin.xyz-formatted"
+    ot_fname = ipath + ot + "-fin.xyz-formatted"
 
     it_data = read_data(it_fname)
     ot_data = read_data(ot_fname)
 
     all_transformed = [transform(it_data, delta) + ot_data for delta in all_delta]
     for i in range(len(all_transformed)):
-      out_fname = "data/2019/output/" + ttype + "/" + it + "_" + str(i) + ".xyz"
+      out_fname = opath + ttype + "/" + it + "_" + str(i) + ".xyz"
+      print "all_transformed[" + str(i) + "] = ", all_transformed[i]
       write_data(string_of_data(all_transformed[i]), out_fname)
 
   return process_pair
 
-zshift_pair = make_process_pair(shift_z, "zshift", all_shifts)
-rotate_pair = make_process_pair(rotate, "rotate", all_angles)
+def make_processors(ipath, opath):
+  zshift_pair = make_process_pair(shift_z, "zshift", all_shifts, ipath, opath)
+  rotate_pair = make_process_pair(rotate, "rotate", all_angles, ipath, opath)
+  return (zshift_pair, rotate_pair)
+
 
 '''
   This function creates the processing function.
@@ -99,10 +104,17 @@ def make_process_all_pairs(process_pair):
 
   return process_all_pairs
 
-zshift_all_pairs = make_process_all_pairs(zshift_pair)
-rotate_all_pairs = make_process_all_pairs(rotate_pair)
+def process(ipath, opath):
+  zshift_pair, rotate_pair = make_processors(ipath, opath)
+  zshift_all_pairs = make_process_all_pairs(zshift_pair)
+  rotate_all_pairs = make_process_all_pairs(rotate_pair)
+  zshift_all_pairs(all_pairs)
+  rotate_all_pairs(all_pairs)
+
+def process_mixed():
+  process("data/2019/mixed/", "data/2019/mixed/output/")
 
 if __name__ == "__main__":
-  print "rotating ..."
-  rotate_all_pairs(all_pairs)
+  print "processing ..."
+  process_mixed()
   print "done!"

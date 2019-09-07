@@ -69,7 +69,5 @@ files=(
 )
 
 for name in ${files[@]}; do
-  mkdir ${name}
-  cp ${name}.xyz ${name}
-  cp ../script.sh ${name}
+  mv ${name}.xyz ${name}
 done
