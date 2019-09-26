@@ -6,16 +6,6 @@ import csv
 import math
 import coordinates as C
 
-all_pairs = [
- ("33", "88"),
- ("44", "99"),
- ("55", "1010"),
- ("66", "1111"),
- ("77", "1212")
-]
-all_shifts = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0]
-all_angles = [(math.pi * degree / 180) for degree in [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]]
-
 '''
  Description : read data from CSV file
  Requirement : The CSV file should contain data in the following format:
@@ -33,7 +23,6 @@ def read_data(file_name):
 
 # input points in cartesian coordinates.
 def shift_z(data, shift):
-  print data
   return [(atom, float(x), float(y), float(z) + shift) for [atom, x, y, z] in data]
 
 def rotate(data, angle):
@@ -82,12 +71,11 @@ def make_process_pair(transform, ttype, all_delta, ipath, opath):
     all_transformed = [transform(it_data, delta) + ot_data for delta in all_delta]
     for i in range(len(all_transformed)):
       out_fname = opath + ttype + "/" + it + "_" + str(i) + ".xyz"
-      print "all_transformed[" + str(i) + "] = ", all_transformed[i]
       write_data(string_of_data(all_transformed[i]), out_fname)
 
   return process_pair
 
-def make_processors(ipath, opath):
+def make_processors(ipath, opath, all_shifts, all_angles):
   zshift_pair = make_process_pair(shift_z, "zshift", all_shifts, ipath, opath)
   rotate_pair = make_process_pair(rotate, "rotate", all_angles, ipath, opath)
   return (zshift_pair, rotate_pair)
@@ -104,17 +92,40 @@ def make_process_all_pairs(process_pair):
 
   return process_all_pairs
 
-def process(ipath, opath):
-  zshift_pair, rotate_pair = make_processors(ipath, opath)
+def process(ipath, opath, all_shifts, all_angles, all_pairs):
+  zshift_pair, rotate_pair = make_processors(ipath, opath, all_shifts, all_angles)
   zshift_all_pairs = make_process_all_pairs(zshift_pair)
   rotate_all_pairs = make_process_all_pairs(rotate_pair)
   zshift_all_pairs(all_pairs)
   rotate_all_pairs(all_pairs)
 
 def process_mixed():
-  process("data/2019/mixed/", "data/2019/mixed/output/")
+  all_pairs = [
+    ("33", "88"),
+    ("44", "99"),
+    ("55", "1010"),
+    ("66", "1111"),
+    ("77", "1212")
+  ]
+
+  d2019_mixed_all_shifts = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0]
+  d2019_mixed_all_angles = [(math.pi * degree / 180) for degree in [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]]
+  process("data/2019/mixed/", "data/2019/mixed/output/", d2019_mixed_all_shifts, d2019_mixed_all_angles, all_pairs)
+
+def process_long():
+  all_pairs = [
+    ("33", "88"),
+    ("44", "99"),
+    ("55", "1010"),
+    ("66", "1111"),
+    ("77", "1212")
+  ]
+
+  d2019_long_all_shifts = range(12)
+  d2019_long_all_angles = [(math.pi * degree / 180) for degree in [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]]
+  process("data/2019/long/", "data/2019/long/output/", d2019_long_all_shifts, d2019_long_all_angles, all_pairs)
 
 if __name__ == "__main__":
   print "processing ..."
-  process_mixed()
+  process_long()
   print "done!"
